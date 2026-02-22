@@ -1,78 +1,94 @@
 
+const host = '0.0.0.0';
+const porta = 3000;
 
-    import express from "express";
+import express from "express";
+const aplicacao = express();
 
-     const host = '0.0.0.0';
-     const porta = 3000;
+aplicacao.get("/", (requisicao, resposta) => {
 
+    const idadedFuncionario = requisicao.query.idade;
+    const salarioBaseFuncionario = requisicao.query.salario_base;
+    const anoContratacaoFuncionario = requisicao.query.anoContratacao;
+    const matriculaFuncionario = requisicao.query.matricula;
 
-    const servidor = express();
+    if (!idadeFuncionario || Number(idadeFuncionario) <= 16) {
+        return resposta.send("Erro: a idade deve ser maior que 16 anos.");
+    }
 
-    servidor.get('/tabuada', (requisicao, resposta)=> {
+    if (!salarioBaseFuncionario || isNaN(salarioBaseFuncionario)) {
+        return resposta.send("Erro: o salário base informado é inválido.");
+    }
 
-     const numero = number(requisicao.query.numero);
-     const sequencia= number(requisicao.query.sequencia);
+    if (!anoContratacaoFuncionario || Number(anoContratacaoFuncionario) <= 1960) {
+        return resposta.send("Erro: o ano de contratação deve ser maior que 1960.");
+    }
 
-     if (!numero || !sequencia) {
-          resposta.send(`
-              <!Doctype html>
-              <html lang="pt-br">
-              <head>
-                    <meta charset="UTF-8">
-                    <meta http-equiv="X-UA-Compatible" content= "IE=edge">
-                    <meta name="viewport" content= "width=device-width, initial-scale=1.0">
-                    <title>Tabuada</title>
-         
-              </head>
-              <body>
-               <h1>Tabuada</h1>
-               <h2> Por favor, informe a sequencia </h2>
-               </body>
-               </html>
-              
-          `);
-     }
-     else{
-          resposta.write(`
-               <Doctype html>
-              <html lang="pt-br">
-              <head>
-                    <meta charset="UTF-8">
-                    <meta http-equiv="X-UA-Comptible" content= "IE=edge">
-                    <meta name="viewport" content= "width=device=width, initial-scale=1.0">
-                    <title>Tabuada</title>
-         
-              </head>
-              <body>
-               <h1>Tabuada do numero ${numero} até a sequencia ${sequencia} </h1>
-               <ul>
-               
-               `);
+    if (!matriculaFuncionario || Number(matriculaFuncionario) <= 0) {
+        return resposta.send("Erro: a matrícula deve ser um número inteiro maior que zero.");
+    }
 
-          for (let i =0; i <= sequencia; i++) {
-               resposta.write(`<li> ${i} x ${numero} = ${i * numero}</li> `);
-          }
+    const idadeConvertida = Number(idadeFuncionario);
+    const salarioBaseConvertido = Number(salarioBaseFuncionario);
+    const anoAtual = new Date().getFullYear();
+    const tempoNaEmpresa = anoAtual - Number(anoContratacaoFuncionario);
 
-          resposta.write(`
-               </ul>
-               </body>
-               </html>
-               `);
+    let percentualReajuste = 0;
+    let valorAjusteFixo = 0;
 
-          resposta.end();
-     }
-     
-     console.log("requisição / tabuada");
+    if (idadeConvertida >= 18 && idadeConvertida <= 39) {
 
+        if (sexoFuncionario === "M") {
+            percentualReajuste = 0.10;
+            valorAjusteFixo = tempoNaEmpresa <= 10 ? -10 : 17;
+        } else {
+            percentualReajuste = 0.08;
+            valorAjusteFixo = tempoNaEmpresa <= 10 ? -11 : 16;
+        }
+
+    } else if (idadeConvertida >= 40 && idadeConvertida <= 69) {
+
+        if (sexoFuncionario === "M") {
+            percentualReajuste = 0.08;
+            valorAjusteFixo = tempoNaEmpresa <= 10 ? -5 : 15;
+        } else {
+            percentualReajuste = 0.10;
+            valorAjusteFixo = tempoNaEmpresa <= 10 ? -7 : 14;
+        }
+
+    } else if (idadeConvertida >= 70 && idadeConvertida <= 99) {
+
+        if (sexoFuncionario === "M") {
+            percentualReajuste = 0.15;
+            valorAjusteFixo = tempoNaEmpresa <= 10 ? -15 : 13;
+        } else {
+            percentualReajuste = 0.17;
+            valorAjusteFixo = tempoNaEmpresa <= 10 ? -17 : 12;
+        }
+    }
+
+    const salarioReajustado =
+        salarioBaseConvertido +
+        (salarioBaseConvertido * percentualReajuste) +
+        valorAjusteFixo;
+
+    resposta.send(`
+        <h2>Dados do Funcionário</h2>
+
+        <p>Matrícula: ${matriculaFuncionario}</p>
+        <p>Idade: ${idadeFuncionario}</p>
+        <p>Sexo: ${sexoFuncionario}</p>
+        <p>Salário Base: R$ ${salarioBaseConvertido.toFixed(2)}</p>
+        <p>Tempo na Empresa: ${tempoNaEmpresa} anos</p>
+
+        <h2>
+            Salário Reajustado: R$ ${salarioReajustado.toFixed(2)}
+        </h2>
+    `);
+});
+
+aplicacao.listen(3000, () => {
+    console.log("Aplicação em execução no endereço http://localhost:3000");
 });
 
 
-
-//servidor.get('/inicio', (idade) =>{
- //          idade = Number(requisicao.query.idade);
- //          salario_basse = Number(requisicao.query.idade)
- //   });
-
-    servidor.listen(porta, host, () => {
-     console.log(`Servidor escutando em http://${host} : ${porta}`);
-     });
